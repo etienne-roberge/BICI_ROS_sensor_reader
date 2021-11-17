@@ -34,12 +34,7 @@ int main (int argc, char** argv)
 
 	ros::Rate loop_rate(1000);
 
-	/* Read and Parse Data */
-	uint8_t byte_i; // the ith message of any given read
-	uint8_t message_length; // the checksum we received in the message, encoding the message length
-	int start_index = 0;
 	int unread_bytes = 0;
-	uint16_t end_index;
 
 	while (ros::ok())
 	{
@@ -69,20 +64,16 @@ int main (int argc, char** argv)
 				{
 					// then we can get the message length
 					int message_length = cb[start_index + 1];
-					//is the end part of the message here?
 					if (start_index + message_length > unread_bytes)
 					{
-						//std::cout << "its going to be part of the next message messLength=" << message_length << " unread=" << unread_bytes << std::endl;
 						unread_bytes -= start_index;
 						cb.erase_begin(start_index);
 						msg_found = true;
 					}
 					else if (cb[start_index + message_length - 1] == '\n')
 					{
-						//traite le message
 						parse_message(cb, start_index, message_length, publishers);
 						unread_bytes -= start_index + message_length;
-						std::cout << "Yeah valid message! messLength=" << message_length << " unread=" << unread_bytes << std::endl;
 						msg_found = true;
 						cb.erase_begin(start_index + message_length);
 					}
@@ -92,7 +83,6 @@ int main (int argc, char** argv)
 			{
 				cb.erase_begin(start_index);
 				unread_bytes = 0;
-				std::cout << "nothing good" << std::endl;
 			}
 		}
 		else
@@ -100,8 +90,6 @@ int main (int argc, char** argv)
 			std::cout << "ERROR: BUFFER OVERFLOW!!! Receiving data faster then we can process them." << std::endl;
 			unread_bytes = 0;
 		}
-
-
 	}
 }
 
